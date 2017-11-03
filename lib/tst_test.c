@@ -227,13 +227,18 @@ static void print_result(const char *file, const int lineno, int ttype,
 	size -= ret;
 
 	ret = vsnprintf(str, size, fmt, va);
-	str += ret;
-	size -= ret;
-
-	if (str_errno) {
+	str += MIN(ret, size - 2);
+	size -= MIN(ret, size - 2);
+	if (ret >= size - 2) {
+		tst_res_(file, lineno, TWARN,
+				"Next message is too long and truncated:");
+	} else if (str_errno) {
 		ret = snprintf(str, size, ": %s", str_errno);
-		str += ret;
-		size -= ret;
+		str += MIN(ret, size - 2);
+		size -= MIN(ret, size - 2);
+		if (ret >= size - 2)
+			tst_res_(file, lineno, TWARN,
+				"Next message is too long and truncated:");
 	}
 
 	snprintf(str, size, "\n");
